@@ -24,25 +24,75 @@ class Game:
         self.buttons_light_position = {'L': (270, 155), 'O': (670, 155), 'R': (370, 155)}
 
     def draw_board(self):
-        self.screen.blit(self.background_image, (0, 0))
         for num, key in enumerate(random.sample(self.letters_key, 10)):
             self.letters.add(Letter(key, 269 + (num * 50)))
-        self.letters.draw(self.screen)
         for key in self.buttons_positions.keys():
             self.buttons.add(Button(key, self.buttons_positions[key], self.buttons_light_position[key]))
-        for sprite in self.buttons.sprites():
-            print(sprite)
-        print(self.buttons)
-        self.buttons.draw(self.screen)
+        self.update()
         self.screen.blit(self.frame.frame_surface(), (269, 91))
         pygame.display.flip()
 
-    def button_click(self, event, frame):
+    def update(self):
+        self.screen.blit(self.background_image, (0, 0))
+        self.letters.draw(self.screen)
+        self.buttons.draw(self.screen)
+        print("up")
+
+    def move_right(self):
+        x, y = self.frame.rect[0], self.frame.rect[1]
+        print(x, y)
+        if x < 669:
+            x += 50
+        self.update()
+        self.screen.blit(self.frame.frame_surface(), (x, y))
+        self.frame.rect[0] = x
+        pygame.display.flip()
+
+    def move_left(self):
+        x, y = self.frame.rect[0], self.frame.rect[1]
+        print(x, y)
+        if x > 269:
+            x -= 50
+        self.update()
+        self.screen.blit(self.frame.frame_surface(), (x, y))
+        self.frame.rect[0] = x
+        pygame.display.flip()
+
+    def swap(self):
+        x, y = self.frame.rect[0], self.frame.rect[1]
+        let_iter = iter(self.letters.sprites())
+        print(self.letters)
+        for letter in let_iter:
+            if letter.position[0] == x:
+                let1 = letter
+                let2 = next(let_iter)
+                let1.image, let2.image = let2.image, let1.image
+                let1.key, let2.key = let2.key, let1.key
+        self.letters.draw(self.screen)
+        self.screen.blit(self.frame.frame_surface(), (x, 91))
+
+        pygame.display.flip()
+
+        print(self.frame.rect)
+        print(self.letters)
+
+    def button_click(self, event):
         if event.type == pygame.MOUSEBUTTONUP:
             x, y = pygame.mouse.get_pos()
             for button in self.buttons:
                 if button.rect.collidepoint(x, y):
-                    self.frame = button.on_click()
+                    if button.key == "R":
+                        self.move_right()
+                    if button.key == "L":
+                        self.move_left()
+                    if button.key == "O":
+                        self.swap()
+    '''def button_light(self, event):
+        if event.type == pygame.MOUSEMOTION:
+            x, y = pygame.mouse.get_pos()
+            for button in self.buttons:
+                if button.rect.collidepoint(x, y):
+                    button'''
 
     def main_loop(self):
         self.draw_board()
@@ -53,7 +103,7 @@ class Game:
     def event_loop(self):
         for event in pygame.event.get():
             print(event)
-            self.button_click(event, self.frame)
+            self.button_click(event)
             if event.type == pygame.QUIT:
                 pygame.quit()
                 exit()

@@ -17,13 +17,8 @@ class Button(pygame.sprite.Sprite):
             self.image, self.size = Resize(pygame.image.load(path)).resize()
             self.rect = pygame.Rect(self.button_position[0], self.button_position[1], self.size[0], self.size[1])
 
-    def on_click(self):
-        if self.key == "O":
-            return ("cipa")
-        if self.key == "L":
-            return ("chuj")
-        if self.key == "R":
-            return ("sperma")
+    def on_click(self, function):
+        function
 
     def __str__(self):
         return f"Key {self.key}, postion: {self.button_position}, light postion: {self.button_light_position}, "
