@@ -27,15 +27,18 @@ class Game:
         self.steps = self.bubble_sort([key for key in self.unsorted_key])
         print(len(self.steps))
         self.actual_step = 0
+        self.end_game = 0
+    def lost(self):
+        pass
 
     def swap_validator(self, let1, let2):
         if self.steps[self.actual_step] == (let1.key, let2.key):
             self.actual_step += 1
             if self.actual_step == len(self.steps):
-                return "wygrałeś!"
+                self.end_game = 1
             print(self.steps[self.actual_step])
         else:
-            return "przegrałeś"
+            self.end_game = -1
 
     def bubble_sort(self, arr):
         n = len(arr)
@@ -83,12 +86,11 @@ class Game:
             if letter.position[0] == x:
                 let1 = letter
                 let2 = next(let_iter)
-                print(self.swap_validator(let1, let2))
+                self.swap_validator(let1, let2)
                 let1.image, let2.image = let2.image, let1.image
                 let1.key, let2.key = let2.key, let1.key
         self.letters.draw(self.screen)
         self.screen.blit(self.frame.frame_surface(), (x, 91))
-
 
     def button_click(self, event):
         if event.type == pygame.MOUSEBUTTONUP:
@@ -119,10 +121,22 @@ class Game:
     # event loop to implements events
     def event_loop(self):
         for event in pygame.event.get():
-            self.button_click(event)
-            self.button_light(event)
-            self.update()
-            pygame.display.flip()
+            print(event)
+            if self.end_game == 0:
+                self.button_click(event)
+                self.button_light(event)
+                self.update()
+                pygame.display.flip()
+            if self.end_game == -1:
+                circle = pygame.Surface((100, 100), pygame.SRCALPHA)
+                # Draw a circle onto the `circle` surface.
+                pygame.draw.circle(circle, [255, 0, 0], [30, 30], 30)
+                self.screen.blit(circle, [250, 250])
+                pygame.display.flip()
+                self.end_game = 0
+                self.frame.rect[0], self.frame.rect[1] = 269, 91
+                self.__init__()
+                self.draw_board()
 
             if event.type == pygame.QUIT:
                 pygame.quit()
