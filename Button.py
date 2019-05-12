@@ -3,27 +3,30 @@ from game1v2.Resize import Resize
 
 
 class Button(pygame.sprite.Sprite):
-    def __init__(self, key, position, light_postion, light = False):
+    def __init__(self, key, position, light_postion):
         super().__init__()
         self.key = key
         self.button_position = position
         self.button_light_position = light_postion
-        if light:
-            path = './graphics/button_' + self.key + '_light.png'
-            self.image, self.size = Resize(pygame.image.load(path)).resize()
-            self.rect = (self.button_light_position[0], self.button_light_position[1], self.size[0], self.size[1])
-        else:
-            path = './graphics/button_' + self.key + '.png'
-            self.image, self.size = Resize(pygame.image.load(path)).resize()
-            self.rect = pygame.Rect(self.button_position[0], self.button_position[1], self.size[0], self.size[1])
+        self.image_off, self.size_off = Resize(pygame.image.load('./graphics/button_' + self.key + '.png')).resize()
+        self.size = self.size_off
+        self.rect_off = pygame.Rect(self.button_position[0], self.button_position[1], self.size[0], self.size[1])
+        self.image_on, self.size_on = Resize(pygame.image.load('./graphics/button_' + self.key + '_light.png')).resize()
+        self.rect_on = pygame.Rect(self.button_light_position[0], self.button_light_position[1], self.size[0], self.size[1])
+        self.rect = self.rect_off
+        self.image = self.image_off
 
-    def on_click(self):
-        if self.key == "O":
-            return ("cipa")
-        if self.key == "L":
-            return ("chuj")
-        if self.key == "R":
-            return ("sperma")
+    def on_click(self, function):
+        function
+        self.light_off()
+
+    def light_on(self):
+        self.rect = self.rect_on
+        self.image = self.image_on
+
+    def light_off(self):
+        self.rect = self.rect_off
+        self.image = self.image_off
 
     def __str__(self):
         return f"Key {self.key}, postion: {self.button_position}, light postion: {self.button_light_position}, "
