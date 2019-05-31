@@ -12,7 +12,9 @@ import random
 class Game:
     def __init__(self):
         self.SCALE = 2
-
+        self.fps = 30
+        self.clock = pygame.time.Clock()
+        mb_position = (280, 400)
         pygame.init()
 
         self.background_image = pygame.image.load("graphics/start.png")
@@ -20,13 +22,12 @@ class Game:
         self.screen = pygame.display.set_mode(self.size)
         pygame.display.set_caption("Bubble Sort Game")
 
+        self.frame = ""
         self.letters = Letters()
         self.buttons = Buttons()
-        mb_position = (280, 400)
+        self.frames = pygame.sprite.Group()
         self.menu_button = Button("S", mb_position, mb_position, self.SCALE)
         self.buttons.add(self.menu_button)
-        self.frame = Frame(self.size[0] / 3.56, self.size[1] / 5.93, self.SCALE)
-
         self.letters_key = ('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'J', 'K', 'N', 'O', 'P', 'R', 'S', 'X', 'Z')
         self.buttons_positions = {'L': (self.size[0] / 3.42, self.size[1] / 3.27),
                                   'O': (self.size[0] / 1.41, self.size[1] / 3.27),
@@ -38,15 +39,22 @@ class Game:
         self.steps = self.bubble_sort([key for key in self.unsorted_key])
         self.actual_step = 0
         self.end_game = "start"
+        print(len(self.steps))
+        print(self.steps[self.actual_step])
 
     def swap_validator(self, let1, let2):
-        if self.steps[self.actual_step] == (let1.key, let2.key):
-            self.actual_step += 1
-            if self.actual_step == len(self.steps):
+        try:
+            if self.steps[self.actual_step] == (let1.key, let2.key):
+                self.actual_step += 1
+                if self.actual_step == len(self.steps):
+                    self.end_game = 1
+                print(self.steps[self.actual_step])
+            else:
+                self.end_game = "fail"
+        except IndexError:
                 self.end_game = "win"
-            print(self.steps[self.actual_step])
-        else:
-            self.end_game = "fail"
+
+
 
     def bubble_sort(self, arr):
         n = len(arr)
@@ -60,12 +68,13 @@ class Game:
 
     def update(self):
         self.screen.blit(self.background_image, (0, 0))
-        self.letters.draw(self.screen)
         self.buttons.draw(self.screen)
-        if self.end_game == "play":
-            self.screen.blit(self.frame.frame_surface(), self.frame.get_coordinate_xy())
+        self.letters.draw(self.screen)
+        self.frames.draw(self.screen)
 
     def draw_board(self):
+        self.frame = Frame(self.size[0] / 3.56, self.size[1] / 5.93, self.SCALE)
+        self.frames.add(self.frame)
         for num, key in enumerate(self.unsorted_key):
             self.letters.add(Letter(key, 269 + (num * 50), self.SCALE))
         for key in self.buttons_positions.keys():
@@ -114,7 +123,6 @@ class Game:
                         self.end_game = "play"
                     if button.key == "F":
                         self.end_game = "start"
-                        self.unsorted_key = random.sample(self.letters_key, 10)
 
     def button_light(self, event):
         if event.type == pygame.MOUSEMOTION:
@@ -128,6 +136,7 @@ class Game:
     #main game loop
     def main_loop(self):
         while True:
+            self.clock.tick(self.fps)
             while self.end_game == "start":
                 self.screen.blit(self.background_image, (0, 0))
                 self.event_loop()
@@ -136,16 +145,27 @@ class Game:
                 self.buttons.remove(self.menu_button)
                 self.background_image = Resize(pygame.image.load("graphics/chest.png")).img
                 self.event_loop()
-                if self.end_game == "fail":
-                    self.background_image = Resize(pygame.image.load("graphics/fail.png")).img
-                    self.menu_button.key = "F"
-                    self.buttons.empty()
-                    self.letters.empty()
-                    self.buttons.add(self.menu_button)
-                    self.screen.blit(self.background_image, (0, 0))
-                    while self.end_game == "fail":
-                        self.event_loop()
-                        self.end_game = "start"
+            while self.end_game == "fail":
+                self.background_image = Resize(pygame.image.load("graphics/fail.png")).img
+                self.menu_button.key = "F"
+                self.buttons = Buttons()
+                self.letters = Letters()
+                self.frames = pygame.sprite.Group()
+                self.buttons.add(self.menu_button)
+                self.screen.blit(self.background_image, (0, 0))
+                self.event_loop()
+            while self.end_game == "win":
+                self.background_image = Resize(pygame.image.load("graphics/end.png")).img
+                self.menu_button.key = "S"
+                self.buttons = Buttons()
+                self.letters = Letters()
+                self.frames = pygame.sprite.Group()
+                self.buttons.add(self.menu_button)
+                self.screen.blit(self.background_image, (0, 0))
+                self.event_loop()
+            if self.end_game == "start":
+                self.__init__()
+
 
     # event loop to implements events
     def event_loop(self):
